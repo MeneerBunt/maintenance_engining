@@ -1,0 +1,231 @@
+
+---
+title: "Deferred life of gas connections"
+author: "Marco Bunt"
+output: 
+  html_document:
+    fig_caption: yes
+    number_sections: true
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+
+date: "`r Sys.time()`"
+
+
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = F, incluse = F, warning=FALSE, message=FALSE)
+
+LoadPackages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+LoadPackages(c("dplyr", "ggplot2"))
+
+```
+
+# Koppejan -methode 
+
+Groud-subsidice is calculated via Koppejan, bestaande uit een deel primaire zetting (volumeverandering door elastische vervorming en het uittreden van water uit de porien) en een gedeelte secundaire zetting (gevolg van kruip van de korrels).
+
+(@Koppejan) $$\displaystyle \delta _{c}(t)=h ~ \left({\frac {1}{C_{p}}}+{\frac {1}{C_{s}}} \log (t) \right) ~ \ln \left({\frac {p_{b}+\Delta p}{p_{b}}}\right)\ $$
+waarin:
+
+* h =  dikte van de (homogene) bodemlaag
+* Cp, Cs = bodemafhankelijke samendrukkingsconstanten
+* t = tijd in dagen
+* Pb  = aanvangsgrondspanning (verticaal))
+* Delta P = spanningsverhoging door belasting.
+
+De variabele voor de berekening worden, indien mogelijk, vastgesteld met metingen. Voor deze metingen maakt Stedin gebruik van satellietgegevens om de actuele deformatie te bepalen. In theorie is de actuele zettingsdeformatie gelijk aan de afgeleide van de zetting volgens Koppejan:
+
+(@Koppejan2) $$\displaystyle \frac {d \delta_{c}(t)}{d t }=\frac {d}{dt } \bigg[h \left({\frac {1}{C_{p}}}+{\frac {1}{C_{s}}} \log (t) \right) \ln \left({\frac {p_{b}+\Delta p}{p_{b}}}\right)\bigg] $$
+
+(@Koppejan3) $$\displaystyle \frac {d \delta_{c}(t)}{d t }=  h ~ {\frac {1}{C_{s}}} \frac {1}{t  ~ \ln (10)} ~ \ln \left({\frac {p_{b}+\Delta p}{p_{b}}}\right) ~ = ~  {\frac {C_1}{t}}  $$
+
+Op tijdstip $t_0$ kan $C_1$ worden berekend. $t_0$ is het tijdstip waarop de grondzakking vanuit het sattelietbeeld wordt berekend.
+(@Koppejan3) $$\displaystyle C_1 = \frac {d \delta_{c}(t_0)}{d t } ~ t_0\ $$
+
+Zodoende kunnen de grondconstante voor de dikte van de bodemlaag (h), en de belastinggegevens van de grond $p_{b}, \Delta p, ~ p_{b}$ worden afgeleid:
+
+(@afleiden) $$\displaystyle h \ln \left({\frac {p_{b}+\Delta p}{p_{b}}}\right) = {C_{s}} ~ t ~ \ln  (10) ~ \frac {d \delta_{c}(t)}{d t } \ $$
+Substitutie  van verschillende delen in de oorspronkelijke formule geeft:
+
+(@Zakking) $$\displaystyle \delta _{c}(t)= \left( {\frac {C_{s}}{C_{p}}}+ \log (t) \right) ~ t ~ \ln  (10) ~ \frac {d \delta_{c}(t)}{d t } \ $$
+
+Hierin verondersteld de factor $\displaystyle {\frac {C_{s}}{C_{p}}} \ $ de snelheid waarmee er verdichting van een bodemlaag plaats vind.
+
+Vereenvoudigde weergave en oplossen van d/dt:
+(@Zakking_b) $$\displaystyle \delta _{c}(t)= \left( \frac {C_{s}}{C_{p}}+ \log (t) \right) ~ t ~ \ln  (10) ~ \frac{{C_1}}{t} = \left({C}+ \log (t)\right) ~ \ln  (10) ~ \left({\frac {d \delta_{c}(t.2)}{d t } ~t.2}\right) $$
+
+**Sateliet gegevens grondzakking**
+
+De factor $\frac {d \delta_{c}(t_0)}{d t } \ $ uit formule Zakking kan worden geinterperteerd als de actuele zakking [meter/jaar]. Deze actuele zakking wordt vanuit de ruimte gemonitord. 
+
+**Historische zakking**
+
+Het moment van aanbrengen van initiele grondbelasting (bouw woonhuis) is niet altijd hetzelfde als de aanleg van de gasaansluiting. De historische grondzakking - voorafgaande aan het aanleggem vam de PGA - moet in de berekening worden meegenomen. Dit geeft de volgende vergelijking:
+
+(@Hist) $$\displaystyle \delta _{PGA}= \delta_{t.2} - \delta _{t.1} $$
+
+(@Hist_1) $$\displaystyle \delta _{PGA}=  \left({C}+ \log (t_{t.2})\right) ~ \ln  (10) ~ \left({\frac {d \delta_{c}(t.2)}{d t } ~t.2}\right) -  \left({C}+ \log (t_{t.1})\right) ~ \ln  (10) ~ \left({\frac {d \delta_{c}(t.2)}{d t } ~t.2}\right) $$
+
+(@Hist_1) $$\displaystyle \delta _{PGA}=  \ln  (10) ~ \left({\frac {d \delta_{c}(t.2)}{d t } ~t.2}\right) ~ \log \left(\frac {t.2}{t.1}\right) $$
+
+Wanneer er louter wordt gekeken naar het verschil in zakking tussen t.2 en t.1, dan gaat zakking als gevolg van tussentijdse grondbelasting $C_p$ verloren. deze wordt opnieuw geintroduceerd, met een correctiefactor voor de tijd.
+
+(@Hist_cor1) $$\displaystyle \delta _{PGA}=  \ln  (10) ~ \left({\frac {d \delta_{c}(t.2)}{d t } ~t.2}\right) ~ \log \left(\frac {t.2}{t.1}\right) + C_1 \log_2(t.2-t.1)  $$
+
+$C_1$ kan worden verleidt uit de resultaten van inspecties:
+
+(@Hist_cor2) $$\displaystyle \delta _{PGA}=  \ln  (10) ~ \left({\frac {d \delta_{c}(t.2)}{d t } ~t.2}\right) ~ \log \left(\frac {t.2}{t.1}\right) + C_1 \log_2(t.2-t.1)  $$
+
+
+**Grondconstanten $C_{p}, ~ C_{s}$**
+
+De locatie-afhankelijk samendrukkingsconstanten $C_{p}, ~ C_{s}$ (formule @Zakking) van de grond op een locatie worden afgeleind uit de resultaten van v-inspecties. Deze constante geven een beeld van de sneheid waarmee grond op een locatie stabiliseert. Vanuit formule @Zakking kan de formule voor het berekenen van de grondconstante worden opgesteld:
+
+(@Const_2) $$\displaystyle  {\frac {C_{s}}{C_{p}}} = \frac{\delta _{c}}{\frac {d \delta_{c}(t)}{d t } ~ t ~ \ln  (10) } - \log (t) \ $$
+
+Wanneer ook de historische zakking wordt meegenomen ontstaat:
+
+(@Const) $$\displaystyle  {\frac {C_{s}}{C_{p}}} = \frac{\delta _{c} ~ ({t_{pga}} - {t_{hist}})}{ \frac {d \delta_{c}(t)}{d t } ~ t ~ \ln  (10)  - {t_{pga}} ~ \log ({t_{pga}}) + {t_{hist}} ~ \log ({t_{hist}})} \ $$
+
+** Ruimtelijke afhankelijkheid
+De ruimtelijke afhankelijkheid van de inspectieresultaten zijn vastgesteld m.b.v. een variogram. In een variogram wordt de ruimtelijke variantie van een dataset weergegeven. Onderstaand figuur toont dat er meer correlatie is tussen punten dicht bij elkaar, dan dat er correlatie is tussen punten ver bij elkaar vandaan. O.b.v. het variogram (en andere optimalisaties) is de reikwijdte van een v-inspectie vansgesteld op 400 meter.  
+
+Door gebruik te maken van formule @Const kan, o.b.v. de hoogemeting van een v-inspectie de grondconstante worden berekend. In de tabel staat "aantal_nn" voor het aantal V_inspecties in een straal van 400 meter om het voorspelde punt. De onderstaande correlatietabel toont dat, wanneer er meer inspecties in de omgeving van een punt zijn uitgevoerd, de waarde van het punt beter kan wroden voorspeld. 
+
+** Prio indeling
+Om de prioriteit van een gebied te bepalen, is de volgende indeling gehanteerd: 
+* Prio 1 of 2: 100 punten
+* Prio 3: 10 punten
+* Prio 4: 1 punt
+* Prio 5 & 6: 0 Punten
+
+Op basis van gemiddelde score van aan gebied wordt de prioriteit van het gebied gemaakt.
+
+** Aantal referentieobjecten
+Wanneer er in een omgeving geen inspecties zijn uitgevoerd, is het niet mogelijk om een voorspelling van de zakking te doen m.b.v. de Koppejan methode. Als alternatieve methode voor de voorspelling wordt gebuikt gemaakt van lineaire voorspelling. Vanaf 2 insspecties in de nabije omgeving, wordt de koppejan methoden betrouwbaarder van GLM.
+
+
+# Asset reliability
+
+Reliability R(t) is the chance that a component will continue to do what it has to do for a certain time. You can see reliability as the survival of a component of the survival of a population of components over time.
+
+$$R(t) = \frac{N(t)}{N(0)}$$
+
+Unreliability can be We express in F(t) and is equal to 1 minus R(t). F(t) can also be refered to as the cumulative failure probability distribution or cumulative failure probability distribution. In formula form:
+
+$$F(t) = 1- R(t)$$
+
+The next derived factor is the probability distribution (PDF). The number of components that dies per unit of time compared to the original population is called the chance of failure. The probability of failure is also a function in time and this is referred to as failure probability distribution or failure probability distribution.
+
+$$f(t) = \frac{F(t + \Delta_t)}{\Delta_t}$$
+Now we can also look at the number of components that die in a year (or time unit) compared to the number of components that were still alive at the start of that year (or time unit). We call this the failure rate z(t), also known as the hazard rate or conditional failure rate. We interpret this as follows: if a component reaches an age of t years, then z(t) is the chance that this component will die in the coming year (t + 1). In formula form:
+
+$$z(t) = \frac{f(t)}{1-F(t)} = \frac{f(t)}{R(t)}$$
+survival probabilities of one year:
+
+$$p(t) = 1- z(t)$$
+
+survival probabilities:
+
+$$kPx = \prod_{x = 0}p(t+i)$$
+
+curtate life expectancy
+$$kPx = \sum_{k=1}kPx$$
+
+
+
+# Deferred mortality
+If a asset has survived, the probability of failure changes over time. This is shown in the figure below, with an imaginary example. If, for a new asset the probibility of the asst failing in year x is pf, than if the asset survived till that year, the probibility of the asset surviving the failing in the next year is higher tan the original prediction. 
+
+```{r life.table.t, include = T, fig.height=5}
+m <- 10
+h <- 0:50
+sd <- 5
+
+#life.table.tmp <-
+i <- rbind(
+  data.frame(Start = 0, age = 0 + h) %>%
+    mutate(Rt = 1- pnorm(q = age, mean = m, sd = sd )) %>%
+    mutate(Ft = 1- Rt) %>%
+    mutate(ft = lead(Ft) - Ft) %>%
+    mutate(zt = ft / Rt) %>%
+    mutate(px = 1- zt) %>% # survival probebility
+    filter(!is.na(zt)) %>%
+    mutate(kpx = cumprod(px )) %>% # possibility of the asset surviving this year 
+    arrange(- age) %>% mutate(E = cumsum(kpx)) %>% arrange(age) %>%# life time expectency
+    mutate(xq = kpx - lead(kpx)),
+  
+  data.frame(Start = 4, age = 4 + h) %>%
+    mutate(Rt = 1- pnorm(q = age, mean = m, sd = sd )) %>%
+    mutate(Ft = 1- Rt) %>%
+    mutate(ft = lead(Ft) - Ft) %>%
+    mutate(zt = ft / Rt) %>%
+    mutate(px = 1- zt) %>% # survival probebility
+    filter(!is.na(zt)) %>%
+    mutate(kpx = cumprod(px )) %>% # possibility of the asset surviving this year 
+    arrange(- age) %>% mutate(E = cumsum(kpx)) %>% arrange(age) %>%# life time expectency
+    mutate(xq = kpx - lead(kpx)),
+  
+  data.frame(Start = 8, age = 8 + h) %>%
+    mutate(Rt = 1- pnorm(q = age, mean = m, sd = sd )) %>%
+    mutate(Ft = 1- Rt) %>%
+    mutate(ft = lead(Ft) - Ft) %>%
+    mutate(zt = ft / Rt) %>%
+    mutate(px = 1- zt) %>% # survival probebility
+    filter(!is.na(zt)) %>%
+    mutate(kpx = cumprod(px )) %>% # possibility of the asset surviving this year 
+    arrange(- age) %>% mutate(E = cumsum(kpx)) %>% arrange(age) %>%# life time expectency
+    mutate(xq = kpx - lead(kpx)),
+  
+  data.frame(Start = 12, age = 12 + h) %>%
+    mutate(Rt = 1- pnorm(q = age, mean = m, sd = sd )) %>%
+    mutate(Ft = 1- Rt) %>%
+    mutate(ft = lead(Ft) - Ft) %>%
+    mutate(zt = ft / Rt) %>%
+    mutate(px = 1- zt) %>% # survival probebility
+    filter(!is.na(zt)) %>%
+    mutate(kpx = cumprod(px )) %>% # possibility of the asset surviving this year 
+    arrange(- age) %>% mutate(E = cumsum(kpx)) %>% arrange(age) %>%# life time expectency
+    mutate(xq = kpx - lead(kpx))) %>%
+  
+  filter(age < 25)
+
+i %>% ggplot(aes(x = age,fill = as.character(Start))) +
+  geom_line(aes(y = xq, col = "pdf")) +
+  geom_line(aes(y = kpx/6, col = "cdf")) +
+  scale_colour_manual(values = c("blue", "red")) +
+  scale_y_continuous(sec.axis = sec_axis(~.*5, name = "sruv.prob"))
+
+
+```
+
+# netto-contante waarde
+
+$$NPV    = \sum_{t=1}^{n} \frac{R_t}{(1+i)^t}$$
+	  
+where
+
+* $R_t$ = Net cash inflow-outflows during a single period t
+* $i$=Discount rate or return that could be earned in alternative investments
+* $t$=Number of timer periods
+
+```{r NP calc}
+NP <-  function(rt, t, i = interest.rate){ 
+    return( rt / ((1 + i)^t)  )}
+
+```
+
+Daarmee moet een asset worden vervangnen indien NP(kosten vervangen) < NP(kosten incident)
+
+$$ cost.replacement.netto =  NP(r_t = cost.replacement, ~t, ~i)  - NP(r_t = (1 - kpx) * cost.failure, ~t, ~i) $$ 
+
+
+
